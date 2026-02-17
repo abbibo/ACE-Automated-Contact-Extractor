@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+python-multipart
+easyocr
+numpy
+pandas
+openpyxl
+Pillow
+phonenumbers
