@@ -10,3 +10,5 @@ venv/
 coverage/
 build/
 *.egg-info/
+.vercel
+.env*.local

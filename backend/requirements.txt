@@ -7,3 +7,6 @@ pandas
 openpyxl
 Pillow
 phonenumbers
+requests
+
+opencv-python-headless
