@@ -12,3 +12,6 @@ build/
 *.egg-info/
 .vercel
 .env*.local
+
+build_log.json
+run_log.json
