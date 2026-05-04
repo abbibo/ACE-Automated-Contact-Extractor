@@ -19,7 +19,7 @@ function App() {
 
     return new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
-      const apiUrl = import.meta.env.VITE_API_URL || '';
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://abeypaul13-ace-backend.hf.space';
       xhr.open('POST', `${apiUrl}/extract`);
       
       xhr.onload = () => {
@@ -28,7 +28,7 @@ function App() {
             const data = JSON.parse(xhr.responseText);
             resolve(data.results || []);
           } catch {
-            reject(new Error('Failed to parse response'));
+            reject(new Error('Invalid JSON response. The backend might be sleeping or down.'));
           }
         } else {
           // Retry on server errors
@@ -93,7 +93,7 @@ function App() {
         console.error(`Failed to process ${file.name}:`, error);
         // Do NOT increment uploadedCount or progress for failed files
         // But we continue to the next file
-        alert(`Failed to process ${file.name} after retries.`);
+        alert(`Failed to process ${file.name}: ${error.message}`);
       }
     }
 
@@ -111,7 +111,7 @@ function App() {
         const formData = new FormData();
         formData.append('file', file);
 
-        const response = await fetch(`${import.meta.env.VITE_API_URL || ''}/process-dataset`, {
+        const response = await fetch(`${import.meta.env.VITE_API_URL || 'https://abeypaul13-ace-backend.hf.space'}/process-dataset`, {
             method: 'POST',
             body: formData,
         });

@@ -80,17 +80,25 @@ class ContactExtractor:
                 raw_phone = phone_match.group(0).strip()
                 phone = self.normalize_phone(raw_phone)
                 
-                # Heuristic: Name is likely in the line directly above
+                # Heuristic: Name is likely in the line(s) directly above
                 name = "Unknown"
                 if i > 0:
                     prev_text = sorted_results[i-1][1].strip()
-                    # Basic name validation: 
-                    # - 2-4 words
-                    # - Mostly alphabetic
-                    # - Capitalized first letters (optional looking at OCR quality)
-                    words = prev_text.split()
-                    if 1 <= len(words) <= 4 and not any(c.isdigit() for c in prev_text):
-                        name = prev_text
+                    words_prev = prev_text.split()
+                    
+                    if i > 1:
+                        prev_prev_text = sorted_results[i-2][1].strip()
+                        words_prev_prev = prev_prev_text.split()
+                        
+                        # Check if name is split across two lines (e.g. First Name \n Last Name)
+                        if (1 <= len(words_prev) <= 2 and not any(c.isdigit() for c in prev_text) and
+                            1 <= len(words_prev_prev) <= 2 and not any(c.isdigit() for c in prev_prev_text)):
+                            name = prev_prev_text + " " + prev_text
+                        elif 1 <= len(words_prev) <= 4 and not any(c.isdigit() for c in prev_text):
+                            name = prev_text
+                    else:
+                        if 1 <= len(words_prev) <= 4 and not any(c.isdigit() for c in prev_text):
+                            name = prev_text
                 
                 # Construct result
                 candidates.append({
