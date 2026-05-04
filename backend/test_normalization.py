@@ -9,11 +9,11 @@ client = TestClient(app)
 
 def test_normalize_phone():
     """Test phone number normalization directly."""
-    assert extractor.normalize_phone("+1 123-456-7890") == "11234567890"  # Normalized to start with 1
-    assert extractor.normalize_phone("(123) 456-7890") == "11234567890"   # Normalized to start with 1
-    assert extractor.normalize_phone("123 456 7890") == "11234567890"     # Normalized to start with 1
+    assert extractor.normalize_phone("+1 415-867-5309") == "14158675309"  # Normalized to start with 1
+    assert extractor.normalize_phone("(415) 867-5309") == "14158675309"   # Normalized to start with 1
+    assert extractor.normalize_phone("415 867 5309") == "14158675309"     # Normalized to start with 1
     assert extractor.normalize_phone("+91 99999 88888") == "919999988888" # International kept as is
-    assert extractor.normalize_phone("123.456.7890") == "11234567890"     # Normalized to start with 1
+    assert extractor.normalize_phone("415.867.5309") == "14158675309"     # Normalized to start with 1
     assert extractor.normalize_phone("") == ""
     assert extractor.normalize_phone(None) == ""
 

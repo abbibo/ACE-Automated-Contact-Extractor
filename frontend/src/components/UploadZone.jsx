@@ -1,7 +1,7 @@
-import React, { useCallback, useState } from 'react';
+import React, { useState } from 'react';
 import { Upload } from 'lucide-react';
 
-const UploadZone = ({ onFilesSelected, isProcessing }) => {
+const UploadZone = ({ onFilesSelected, isProcessing, accept, title, subtitle }) => {
   const [isDragging, setIsDragging] = useState(false);
 
   const handleDragOver = (e) => {
@@ -40,7 +40,7 @@ const UploadZone = ({ onFilesSelected, isProcessing }) => {
         type="file" 
         id="fileInput" 
         multiple 
-        accept="image/*" 
+        accept={accept || "image/*"} 
         onChange={handleChange} 
         style={{ display: 'none' }} 
         disabled={isProcessing}
@@ -48,8 +48,8 @@ const UploadZone = ({ onFilesSelected, isProcessing }) => {
       
       <div className="upload-content">
         <Upload size={48} className="upload-icon" />
-        <h3>{isProcessing ? 'Processing Images...' : 'Drag & Drop Screenshots here'}</h3>
-        <p>or click to browse checks (PNG, JPG, WEBP)</p>
+        <h3>{isProcessing ? 'Processing...' : (title || 'Drag & Drop Screenshots here')}</h3>
+        <p>{subtitle || 'or click to browse checks (PNG, JPG, WEBP)'}</p>
         {isProcessing && <div className="spinner"></div>}
       </div>
     </div>

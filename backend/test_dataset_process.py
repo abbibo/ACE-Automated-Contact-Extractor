@@ -10,10 +10,10 @@ client = TestClient(app)
 def test_dataset_processing_deduplication():
     # Create a sample CSV in memory
     csv_content = """Name,Phone
-Alice,123-456-7890
-Bob,(123) 456-7890
-Charlie,+1 123 456 7890
-Dave,9876543210
+Alice,415-867-5309
+Bob,(415) 867-5309
+Charlie,+1 415 867 5309
+Dave,3125550199
 Eve,+91 98765 43210
 Frank,
 """
@@ -39,8 +39,8 @@ Frank,
     assert len(phones) == len(set(phones))
     
     # Verify specific numbers
-    assert "11234567890" in phones
-    assert "19876543210" in phones
+    assert "14158675309" in phones
+    assert "13125550199" in phones
     assert "919876543210" in phones
     
     # Verify count: Alice/Bob/Charlie (1) + Dave (1) + Eve (1) = 3 unique valid numbers

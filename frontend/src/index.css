@@ -67,6 +67,23 @@ body {
   margin-left: 0.5rem;
 }
 
+@media (max-width: 600px) {
+  .logo {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.2rem;
+  }
+  .subtitle {
+    margin-left: 0;
+    font-size: 0.9rem;
+  }
+  .app-header {
+    flex-direction: row; /* Keep button to right or maybe stack? */
+    align-items: flex-start;
+  }
+}
+
+
 /* Buttons */
 .btn-primary {
   background: var(--primary-color);
@@ -112,6 +129,41 @@ body {
 }
 .btn-icon.cancel:hover {
   color: var(--danger-color);
+}
+
+/* Mode Toggle */
+.mode-toggle {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.mode-btn {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  color: var(--text-secondary);
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.2s;
+  font-family: inherit;
+  font-size: 1rem;
+}
+
+.mode-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.mode-btn.active {
+  background: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+  box-shadow: 0 4px 12px rgba(233, 69, 96, 0.3);
 }
 
 /* Upload Zone */

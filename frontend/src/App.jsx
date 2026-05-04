@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import UploadZone from './components/UploadZone';
 import ResultsTable from './components/ResultsTable';
 import * as XLSX from 'xlsx';
-import { Download, FileText, Smartphone } from 'lucide-react';
+import { Download, FileText, Smartphone, Table } from 'lucide-react';
 import './index.css';
 
 function App() {
@@ -10,6 +10,7 @@ function App() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [processingStatus, setProcessingStatus] = useState({ current: 0, total: 0 });
+  const [mode, setMode] = useState('extract'); // 'extract' or 'process'
 
   // Helper to upload a single file with retries
   const uploadFile = async (file, retryCount = 0) => {
@@ -26,7 +27,7 @@ function App() {
           try {
             const data = JSON.parse(xhr.responseText);
             resolve(data.results || []);
-          } catch (e) {
+          } catch {
             reject(new Error('Failed to parse response'));
           }
         } else {
@@ -67,7 +68,21 @@ function App() {
       const file = files[i];
       try {
         const fileResults = await uploadFile(file);
-        setResults(prev => [...prev, ...fileResults]);
+        
+        // Deduplication Logic:
+        // Filter out contacts that already exist in the current results state.
+        // We check if the phone number already exists in 'results'.
+        setResults(prev => {
+          const existingPhones = new Set(prev.map(r => r.phone));
+          const newContacts = fileResults.filter(contact => {
+             // If phone is empty, we might keep it or drop it. Let's keep for now as per backend logic.
+             // But if it has a phone, check uniqueness.
+             if (!contact.phone) return true; 
+             return !existingPhones.has(contact.phone);
+          });
+          return [...prev, ...newContacts];
+        });
+
         uploadedCount++;
         
         // Update progress strictly based on completed count
@@ -83,8 +98,49 @@ function App() {
     }
 
     setIsProcessing(false);
-    // Ensure 100% only if all processed (or logic dictates completion)
-    // If some failed, bar might not reach 100%, which is correct per requirements
+  };
+
+  const handleDatasetSelected = async (files) => {
+    if (files.length === 0) return;
+    const file = files[0]; // Only process one dataset at a time for now
+
+    setIsProcessing(true);
+    setUploadProgress(0);
+
+    try {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const response = await fetch(`${import.meta.env.VITE_API_URL || ''}/process-dataset`, {
+            method: 'POST',
+            body: formData,
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+             throw new Error(JSON.parse(errorText).detail || 'Failed to process dataset');
+        }
+
+        // Handle file download
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `processed_${file.name.replace('.csv', '').replace('.xlsx', '')}.xlsx`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+
+        alert('Dataset processed and downloaded successfully!');
+
+    } catch (error) {
+        console.error('Dataset processing failed:', error);
+        alert(`Error: ${error.message}`);
+    } finally {
+        setIsProcessing(false);
+        setUploadProgress(100);
+    }
   };
 
   const handleUpdate = (index, newValues) => {
@@ -130,9 +186,41 @@ function App() {
       </header>
 
       <main className="main-content">
+        <div className="mode-toggle">
+            <button 
+                className={`mode-btn ${mode === 'extract' ? 'active' : ''}`}
+                onClick={() => setMode('extract')}
+            >
+                <Smartphone size={18} /> Extract from Images
+            </button>
+            <button 
+                className={`mode-btn ${mode === 'process' ? 'active' : ''}`}
+                onClick={() => setMode('process')}
+            >
+                <Table size={18} /> Process Dataset
+            </button>
+        </div>
+
         <section className="upload-section">
-          <UploadZone onFilesSelected={handleFilesSelected} isProcessing={isProcessing} />
-          {isProcessing && (
+          {mode === 'extract' ? (
+              <UploadZone 
+                onFilesSelected={handleFilesSelected} 
+                isProcessing={isProcessing}
+                accept="image/*"
+                title="Drag & Drop Screenshots here"
+                subtitle="or click to browse images (PNG, JPG, WEBP)"
+              />
+          ) : (
+              <UploadZone 
+                onFilesSelected={handleDatasetSelected} 
+                isProcessing={isProcessing} 
+                accept=".csv, .xls, .xlsx"
+                title="Drag & Drop Dataset here"
+                subtitle="or click to browse files (CSV, Excel)"
+              />
+          )}
+
+          {isProcessing && mode === 'extract' && (
             <div className="progress-container">
               <div className="progress-label">
                 <span>Uploading file {processingStatus.current} of {processingStatus.total}</span>
@@ -146,14 +234,30 @@ function App() {
               </div>
             </div>
           )}
+           {isProcessing && mode === 'process' && (
+            <div className="progress-container">
+               <div className="progress-label">
+                <span>Processing dataset...</span>
+                <span>Please wait</span>
+              </div>
+              <div className="progress-track">
+                <div 
+                  className="progress-fill processing" 
+                  style={{ width: '100%' }}
+                ></div>
+              </div>
+            </div>
+          )}
         </section>
 
-        <section className="results-section">
-          <div className="section-header">
-            <h2>Extracted Contacts <span className="count-badge">{results.length}</span></h2>
-          </div>
-          <ResultsTable data={results} onUpdate={handleUpdate} />
-        </section>
+        {mode === 'extract' && (
+            <section className="results-section">
+            <div className="section-header">
+                <h2>Extracted Contacts <span className="count-badge">{results.length}</span></h2>
+            </div>
+            <ResultsTable data={results} onUpdate={handleUpdate} />
+            </section>
+        )}
       </main>
       
       <footer className="app-footer">
